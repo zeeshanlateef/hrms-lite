@@ -1,22 +1,34 @@
 import React from 'react';
 
-const Card = ({ title, value, icon: Icon, colorClass = 'bg-primary-50 text-primary-600', description }) => {
+const Card = ({ title, value, icon: Icon, colorClass = 'text-primary-600', description, trend }) => {
   return (
-    <div className="card glass hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div className="card-modern p-6 h-full flex flex-col justify-between group">
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{title}</p>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</h3>
-          {description && (
-            <div className="flex items-center gap-1.5 opacity-80">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold">{description}</p>
-            </div>
-          )}
+        <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 ${colorClass} transition-colors duration-300 group-hover:scale-110 transition-transform`}>
+          <Icon size={24} strokeWidth={2.5} />
         </div>
-        <div className={`p-3 rounded-2xl shadow-sm ${colorClass} transition-colors duration-300`}>
-          <Icon size={24} />
+        {trend && (
+          <div className={`flex items-center gap-1 text-xs font-bold ${trend.type === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
+            <span>{trend.type === 'up' ? '↑' : '↓'}</span>
+            <span>{trend.value}%</span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+          {title}
+        </p>
+        <div className="flex items-baseline gap-2">
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {value}
+          </h3>
         </div>
+        {description && (
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 font-medium">
+            {description}
+          </p>
+        )}
       </div>
     </div>
   );

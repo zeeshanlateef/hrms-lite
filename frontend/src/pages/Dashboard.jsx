@@ -1,8 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Users, ClipboardCheck, UserCheck, UserX, ArrowUpRight, TrendingUp, Plus, FileDown, CheckCircle2, Activity, Calendar, Zap } from 'lucide-react';
+import {
+  Users,
+  ClipboardCheck,
+  UserCheck,
+  UserX,
+  ArrowUpRight,
+  TrendingUp,
+  Plus,
+  Calendar,
+  Layers,
+  Activity,
+  ArrowRight
+} from 'lucide-react';
 import { getEmployees, getAttendance, getDashboardStats } from '../services/api';
-import Loader from '../components/common/Loader';
-import { useTheme } from '../context/ThemeContext';
+import { Link } from 'react-router-dom';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
+import Skeleton from '../components/common/Skeleton';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -16,7 +30,9 @@ const Dashboard = () => {
         const [empRes, attRes, statsRes] = await Promise.all([
           getEmployees().catch(() => ({ data: [] })),
           getAttendance().catch(() => ({ data: [] })),
-          getDashboardStats(filterDate).catch(() => ({ data: { total_employees: 0, total_attendance: 0, present_today: 0, absent_today: 0 } }))
+          getDashboardStats(filterDate).catch(() => ({
+            data: { total_employees: 0, total_attendance: 0, present_today: 0, absent_today: 0 }
+          }))
         ]);
 
         const employees = empRes.data || [];
@@ -40,38 +56,79 @@ const Dashboard = () => {
   }, [filterDate]);
 
   if (loading) return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <Loader />
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-12 w-48 rounded-xl" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 w-full rounded-2xl" />)}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Skeleton className="lg:col-span-2 h-[400px] rounded-2xl" />
+        <Skeleton className="h-[400px] rounded-2xl" />
+      </div>
     </div>
   );
 
   const statCards = [
-    { title: 'Active Talent', value: stats.totalEmployees, icon: Users, color: 'from-blue-600 to-primary-400', label: 'Organization' },
-    { title: 'Logs Processed', value: stats.totalRecords, icon: ClipboardCheck, color: 'from-purple-600 to-indigo-400', label: 'Total Records' },
-    { title: 'Present Today', value: stats.presentToday, icon: UserCheck, color: 'from-emerald-600 to-teal-400', label: 'Presence' },
-    { title: 'Absent Today', value: stats.absentToday, icon: UserX, color: 'from-rose-600 to-orange-400', label: 'Exceptions' },
+    {
+      title: 'Total Employees',
+      value: stats.totalEmployees,
+      icon: Users,
+      colorClass: 'text-blue-500',
+      description: 'Active personnel',
+      trend: { type: 'up', value: 12 }
+    },
+    {
+      title: 'Total Logs',
+      value: stats.totalRecords,
+      icon: Layers,
+      colorClass: 'text-indigo-500',
+      description: 'Historical entries',
+      trend: { type: 'up', value: 8 }
+    },
+    {
+      title: 'Present Today',
+      value: stats.presentToday,
+      icon: UserCheck,
+      colorClass: 'text-emerald-500',
+      description: 'Attendance log',
+      trend: { type: 'up', value: 4 }
+    },
+    {
+      title: 'Absent Today',
+      value: stats.absentToday,
+      icon: UserX,
+      colorClass: 'text-rose-500',
+      description: 'Missing records',
+      trend: { type: 'down', value: 2 }
+    },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20 px-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100/50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 text-[10px] font-black uppercase tracking-[0.2em]">
-            <Zap size={12} fill="currentColor" />
-            Executive Summary
-          </div>
-          <h1 className="text-5xl font-black tracking-tighter gradient-text">HR Overview</h1>
-          <p className="text-gray-500 dark:text-slate-400 font-medium max-w-lg">Strategic workforce insights and real-time operational metrics for your organization.</p>
+    <div className="space-y-10 animate-fade-in pb-12">
+      {/* Welcome Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight sm:text-4xl">
+            Overview
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            Monitor your organization's health and activity in real-time.
+          </p>
         </div>
 
-        <div className="flex items-center p-1.5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border border-white dark:border-slate-800 rounded-[1.5rem] shadow-xl group">
-          <div className="p-2.5 text-primary-600 dark:text-primary-400">
-            <Calendar size={20} strokeWidth={2.5} />
+        <div className="flex items-center gap-3 p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+          <div className="pl-3 text-slate-400">
+            <Calendar size={18} />
           </div>
           <input
             type="date"
-            className="bg-transparent border-none focus:ring-0 text-sm font-black text-gray-900 dark:text-gray-100 pr-4 cursor-pointer"
+            className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 dark:text-slate-200 pr-4 outline-none"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
           />
@@ -81,110 +138,82 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, idx) => (
-          <div key={idx} className="card-premium group overflow-hidden">
-            <div className="flex justify-between items-start mb-6">
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${card.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
-                <card.icon size={24} strokeWidth={2.5} />
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{card.label}</span>
-                <span className="text-sm font-bold text-emerald-500 flex items-center gap-1">
-                  <TrendingUp size={12} /> +12%
-                </span>
-              </div>
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-gray-500 dark:text-slate-400 mb-1">{card.title}</h4>
-              <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">{card.value}</p>
-            </div>
-            <div className="mt-6 h-1 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div className={`h-full bg-gradient-to-r ${card.color} w-[70%]`}></div>
-            </div>
-          </div>
+          <Card key={idx} {...card} />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Weekly Trend Chart */}
-        <div className="lg:col-span-8 card-premium flex flex-col min-h-[450px]">
-          <div className="flex items-center justify-between mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Weekly Trend */}
+        <div className="lg:col-span-8 card-modern p-8">
+          <div className="flex items-center justify-between mb-10">
             <div className="space-y-1">
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white">Trend Analysis</h3>
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Active Participation • Weekly</p>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingUp size={20} className="text-primary-500" />
+                Attendance Trends
+              </h3>
+              <p className="text-sm font-medium text-slate-500">Weekly participation report</p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 dark:bg-slate-800 text-sm font-black text-gray-900 dark:text-gray-100 border border-gray-100 dark:border-slate-700 hover:bg-white transition-all shadow-sm">
-              Full Report <ArrowUpRight size={16} />
-            </button>
+            <Link to="/attendance">
+              <Button variant="ghost" size="sm" icon={ArrowRight}>
+                View Full
+              </Button>
+            </Link>
           </div>
 
-          <div className="flex-1 flex items-end justify-between gap-3 md:gap-6 px-4">
+          <div className="flex items-end justify-between gap-2 md:gap-4 h-64 px-2 mb-4">
             {[45, 60, 55, 85, 95, 70, 65].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
-                <div className="w-full relative flex items-end justify-center h-56">
-                  {/* Ghost bar */}
-                  <div className="absolute inset-0 w-full bg-primary-500/5 rounded-2xl"></div>
-                  {/* Active bar */}
+              <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                <div className="w-full relative flex items-end justify-center h-full">
                   <div
-                    className="w-full bg-gradient-to-t from-primary-600 to-primary-400 rounded-2xl relative transition-all duration-700 ease-out group-hover:shadow-[0_0_30px_rgba(2,109,198,0.3)] cursor-pointer"
+                    className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-xl group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 transition-colors"
+                    style={{ height: '100%' }}
+                  />
+                  <div
+                    className="absolute bottom-0 w-full bg-primary-600/80 rounded-t-xl transition-all duration-700 group-hover:bg-primary-500 group-hover:shadow-lg group-hover:shadow-primary-500/20"
                     style={{ height: `${h}%` }}
                   >
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-3 py-2 rounded-xl opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all font-black shadow-2xl z-10">
-                      {h}%
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all font-bold z-10 whitespace-nowrap">
+                      {h}% Present
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Week {i + 1}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Day {i + 1}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Action Center */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="card-premium h-full relative overflow-hidden flex flex-col justify-between">
-            <div className="space-y-8">
+        <div className="lg:col-span-4 space-y-6">
+          <div className="card-modern p-8 h-full flex flex-col justify-between overflow-hidden relative">
+            <div className="space-y-8 relative z-10">
               <div className="space-y-1">
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white">Action Center</h3>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Immediate Executive Tasks</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Activity size={20} className="text-primary-500" />
+                  Quick Actions
+                </h3>
+                <p className="text-sm font-medium text-slate-500 uppercase tracking-widest text-[10px]">Operations Center</p>
               </div>
 
-              <div className="space-y-4">
-                <a href="/employees" className="flex items-center justify-between p-5 bg-primary-600 text-white rounded-[1.5rem] hover:shadow-xl hover:shadow-primary-500/30 transition-all group overflow-hidden relative">
-                  <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                      <Plus size={20} strokeWidth={3} />
-                    </div>
-                    <span className="font-black tracking-tight">Onboard Member</span>
-                  </div>
-                  <ArrowUpRight size={20} className="relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                </a>
-
-                <a href="/attendance" className="flex items-center justify-between p-5 bg-white dark:bg-slate-800 border-2 border-primary-100 dark:border-primary-900/30 text-gray-900 dark:text-white rounded-[1.5rem] hover:border-primary-500 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 flex items-center justify-center">
-                      <CheckCircle2 size={20} strokeWidth={2.5} />
-                    </div>
-                    <span className="font-black tracking-tight">Log Attendance</span>
-                  </div>
-                  <ArrowUpRight size={20} className="text-gray-300 group-hover:text-primary-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                </a>
-
-                <button onClick={() => window.print()} className="flex items-center justify-between p-5 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-800 text-gray-400 rounded-[1.5rem] hover:bg-gray-50 dark:hover:bg-slate-900 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
-                      <FileDown size={20} />
-                    </div>
-                    <span className="font-bold text-sm">System Report</span>
-                  </div>
-                  <ArrowUpRight size={18} />
-                </button>
+              <div className="space-y-3">
+                <Link to="/employees" className="block">
+                  <Button variant="primary" className="w-full justify-between group" icon={Plus}>
+                    Onboard Staff
+                    <ArrowUpRight size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to="/attendance" className="block">
+                  <Button variant="secondary" className="w-full justify-between" icon={ClipboardCheck}>
+                    Attendance Entry
+                    <ArrowRight size={18} />
+                  </Button>
+                </Link>
               </div>
             </div>
 
-            <div className="mt-12 p-6 bg-gradient-to-br from-gray-900 to-slate-800 rounded-[2rem] text-white relative overflow-hidden group">
+            <div className="mt-12 p-6 bg-slate-900 dark:bg-slate-800 rounded-2xl text-white overflow-hidden group">
               <div className="relative z-10">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400 mb-2">Efficiency Rating</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-400 mb-2">Efficiency Rating</p>
                 <div className="flex items-end gap-3 mb-4">
                   <span className="text-4xl font-black tracking-tighter">94.2%</span>
                   <span className="text-xs font-bold text-emerald-400 mb-1.5">+2.4 pts</span>

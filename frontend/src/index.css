@@ -1,82 +1,158 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f0f7ff;
-  --color-primary-100: #e0effe;
-  --color-primary-200: #bae0fd;
-  --color-primary-300: #7cc7fb;
-  --color-primary-400: #38a9f8;
-  --color-primary-500: #0e8ce9;
-  --color-primary-600: #026dc6;
-  --color-primary-700: #0357a1;
-  --color-primary-800: #064a85;
-  --color-primary-900: #0a3f6f;
-  
-  --animate-bounce-slow: bounce 3s infinite;
-  --animate-shake: shake 0.5s ease-in-out;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
+
+  :root {
+    color-scheme: light dark;
+  }
+
   body {
-    @apply bg-[#f8fafc] text-slate-900 transition-colors duration-500 selection:bg-primary-100 selection:text-primary-900;
+    @apply font-inter bg-slate-50 text-slate-900 antialiased selection:bg-primary-100 selection:text-primary-700 transition-colors duration-300;
   }
-  
+
   .dark body {
-    @apply bg-[#020617] text-slate-100 selection:bg-primary-900/30 selection:text-primary-100;
+    @apply bg-[#020617] text-slate-100 selection:bg-primary-900/30 selection:text-primary-400;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-poppins;
+  }
+}
+
+@utility btn-base {
+  @apply px-5 h-11 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
 }
 
 @layer components {
-  .card-premium {
-    @apply bg-white/60 backdrop-blur-xl border border-white rounded-[2rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] hover:-translate-y-1;
-  }
-  
-  .dark .card-premium {
-    @apply bg-slate-900/40 border-slate-800/50 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_40px_80px_rgba(0,0,0,0.4)];
+
+  .btn-primary {
+    @apply btn-base bg-primary-600 text-white shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/40;
   }
 
-  .glass-morph {
-    @apply bg-white/40 backdrop-blur-2xl border border-white/40 shadow-2xl;
+  .btn-secondary {
+    @apply btn-base bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700;
   }
 
-  .dark .glass-morph {
-    @apply bg-slate-900/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+  .card-modern {
+    @apply bg-white dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all duration-300;
   }
-  
-  .btn-premium {
-    @apply h-12 inline-flex items-center justify-center px-8 rounded-2xl font-bold tracking-tight transition-all duration-500 active:scale-95 focus:outline-none focus:ring-4;
-  }
-  
-  .btn-premium-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-[0_10px_20px_rgba(2,109,198,0.3)] hover:shadow-[0_15px_30px_rgba(2,109,198,0.4)] hover:-translate-y-0.5 focus:ring-primary-500/20;
-  }
-  
-  .btn-premium-secondary {
-    @apply bg-white/80 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 focus:ring-primary-500/10;
-  }
-  
-  .input-premium {
-    @apply w-full h-12 px-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 focus:bg-white dark:focus:bg-slate-900 focus:border-primary-500 dark:focus:border-primary-600 focus:ring-0 transition-all duration-300 outline-none font-medium;
+
+  .input-modern {
+    @apply w-full h-11 px-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all;
   }
 
   .gradient-text {
-    @apply bg-gradient-to-br from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent;
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-slate-200 dark:to-slate-500;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
-@keyframes shake {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  75% { transform: rotate(5deg); }
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
+.animate-fade-in {
+  animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
 }
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 dark:bg-slate-800 rounded-full hover:bg-gray-300 dark:hover:bg-slate-700 transition-colors;
+
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes swing {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  20% {
+    transform: rotate(15deg);
+  }
+
+  40% {
+    transform: rotate(-10deg);
+  }
+
+  60% {
+    transform: rotate(5deg);
+  }
+
+  80% {
+    transform: rotate(-5deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-swing {
+  animation: swing 1s ease-in-out infinite;
 }

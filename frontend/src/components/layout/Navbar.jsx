@@ -1,75 +1,68 @@
-import { User, Bell, LogOut, Sun, Moon, LayoutDashboard, Users, CalendarCheck2 } from 'lucide-react';
+import React from 'react';
+import { Bell, Sun, Moon, Search, Menu } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const location = useLocation();
 
-  const navLinks = [
-    { title: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { title: 'Employees', path: '/employees', icon: Users },
-    { title: 'Attendance', path: '/attendance', icon: CalendarCheck2 },
-  ];
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/') return 'Dashboard';
+    if (path === '/employees') return 'Employee Management';
+    if (path === '/attendance') return 'Attendance Tracking';
+    return 'HRMS Lite';
+  };
 
   return (
-    <nav className="h-20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-slate-800/50 sticky top-0 z-50 flex items-center justify-between px-8 transition-all duration-500 shadow-sm">
-      <div className="flex items-center gap-10">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30 group-hover:scale-110 transition-transform duration-300">
-            <User size={24} strokeWidth={2.5} />
-          </div>
-          <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-gray-900 via-primary-600 to-primary-400 dark:from-white dark:via-primary-400 dark:to-primary-600 bg-clip-text text-transparent">HRMS<span className="text-primary-600 dark:text-primary-400">.</span></span>
-        </Link>
-
-        <div className="hidden lg:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = location.pathname === link.path;
-            return (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 group ${
-                  isActive 
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-bold' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Icon size={18} className={isActive ? 'animate-bounce-slow' : 'group-hover:scale-110 transition-transform'} />
-                <span className="text-sm">{link.title}</span>
-              </Link>
-            );
-          })}
+    <nav className="h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 flex items-center justify-between px-4 md:px-8 transition-all duration-300">
+      <div className="flex items-center gap-4">
+        <button className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+          <Menu size={20} />
+        </button>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {getPageTitle()}
+          </h1>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:block">
+            Welcome back, Super Admin
+          </p>
         </div>
       </div>
-      
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 pr-4 border-r border-gray-200 dark:border-slate-800">
-          <button 
+
+      <div className="flex items-center gap-2 md:gap-5">
+        {/* Search Bar - Desktop */}
+        <div className="hidden md:flex items-center relative group">
+          <Search className="absolute left-3.5 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+          <input
+            type="text"
+            placeholder="Search records..."
+            className="w-64 h-10 pl-10 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
+          />
+        </div>
+
+        <div className="flex items-center gap-1 md:gap-2 px-2 md:px-4 border-x border-slate-200 dark:border-slate-800">
+          <button
             onClick={toggleTheme}
-            className="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300 group"
-            title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all group"
+            title={isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
           >
-            {isDarkMode 
-              ? <Sun size={20} className="group-hover:rotate-90 transition-transform duration-500" /> 
-              : <Moon size={20} className="group-hover:-rotate-12 transition-transform duration-500" />
+            {isDarkMode
+              ? <Sun size={20} className="group-hover:rotate-45 transition-transform" />
+              : <Moon size={20} className="group-hover:-rotate-12 transition-transform" />
             }
           </button>
 
-          <button className="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl relative group">
-            <Bell size={20} className="group-hover:shake transition-transform" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+          <button className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl relative group">
+            <Bell size={20} className="group-hover:animate-swing transition-transform" />
+            <span className="absolute top-2.5 right-3 w-2 h-2 bg-primary-500 border-2 border-white dark:border-[#020617] rounded-full"></span>
           </button>
         </div>
 
         <div className="flex items-center gap-3 pl-2">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-gray-900 dark:text-gray-100">Super HR</p>
-            <p className="text-[10px] uppercase tracking-widest text-primary-600 dark:text-primary-400 font-black">Super Admin</p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-600 to-primary-400 text-white flex items-center justify-center font-bold shadow-lg shadow-primary-500/20 cursor-pointer hover:scale-105 transition-transform">
-            SH
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-600 to-primary-400 text-white flex items-center justify-center font-bold shadow-lg shadow-primary-500/20 cursor-pointer hover:scale-105 transition-transform">
+            SA
           </div>
         </div>
       </div>

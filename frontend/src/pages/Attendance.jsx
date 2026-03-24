@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Filter, CheckCircle2, XCircle, Clock, Check, X, UserCheck, Search, Users } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import {
+  Calendar,
+  Filter,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  UserCheck,
+  Search,
+  Users,
+  SearchCheck,
+  History,
+  AlertCircle,
+  ArrowRight,
+  TrendingUp,
+  Fingerprint
+} from 'lucide-react';
 import Button from '../components/common/Button';
-import Loader from '../components/common/Loader';
+import Input from '../components/common/Input';
+import { TableSkeleton } from '../components/common/Skeleton';
+import EmptyState from '../components/common/EmptyState';
 import { getEmployees, getAttendance, markAttendance } from '../services/api';
 
 const Attendance = () => {
@@ -12,7 +28,8 @@ const Attendance = () => {
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [error, setError] = useState('');
+
   const [formData, setFormData] = useState({
     employeeId: '',
     date: new Date().toISOString().split('T')[0],
@@ -35,6 +52,7 @@ const Attendance = () => {
       setRecords(attRes.data || []);
     } catch (err) {
       console.error('Fetch error:', err);
+      setError('Connection failed. Please check backend.');
     } finally {
       setLoading(false);
     }
@@ -42,7 +60,12 @@ const Attendance = () => {
 
   const handleMarkAttendance = async (e) => {
     e.preventDefault();
-    if (!formData.employeeId) return alert('Please select an employee');
+    setError('');
+
+    if (!formData.employeeId) {
+      setError('Please select an employee');
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -54,7 +77,7 @@ const Attendance = () => {
 
       const res = await markAttendance(payload);
       const savedRecord = res.data;
-      
+
       setRecords(prev => {
         const exists = prev.findIndex(r => r.employee_name === savedRecord.employee_name && r.date === savedRecord.date);
         if (exists !== -1) {
@@ -64,129 +87,163 @@ const Attendance = () => {
         }
         return [savedRecord, ...prev];
       });
-      
+
       setFormData({ ...formData, employeeId: '' });
     } catch (err) {
-      alert('Failed to mark attendance: ' + (err.response?.data?.detail || 'Validation error'));
+      setError(err.response?.data?.detail || 'Failed to mark attendance');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredRecords = records.filter(record => record.date === filterDate);
-  const filteredEmployees = employees.filter(emp => 
-    (emp.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (emp.employee_id || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRecords = records.filter(record =>
+    record.date === filterDate &&
+    (record.employee_name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-24 px-4">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-[0.2em]">
-          <Calendar size={12} strokeWidth={3} />
-          Precision Logging
-        </div>
-        <h1 className="text-5xl font-black tracking-tight gradient-text">Attendance Desk</h1>
-        <p className="text-gray-500 dark:text-slate-400 font-medium max-w-lg">Track and verify daily presence with our high-fidelity logging system.</p>
+    <div className="space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-12">
+      {/* Header section */}
+      <div>
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          Attendance
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          Track and manage daily records for your workforce.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        {/* Attendance Form */}
-        <div className="lg:col-span-5 h-fit sticky top-28">
-          <div className="card-premium relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-8 flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center">
-                <Clock size={22} strokeWidth={2.5} />
-              </div>
-              Record Entry
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Attendance Marking Form */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="card-modern p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Fingerprint size={80} />
+            </div>
+
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <SearchCheck size={20} className="text-primary-500" />
+              Quick Entry
             </h2>
 
             <form onSubmit={handleMarkAttendance} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Member Identity</label>
-                <div className="relative">
-                  <select 
-                    className="input-premium pl-12 appearance-none"
+              {error && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-semibold animate-shake">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                  Employee
+                </label>
+                <div className="relative group/select">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/select:text-primary-500 transition-colors" size={18} />
+                  <select
+                    className="input-modern pl-11 appearance-none cursor-pointer"
                     value={formData.employeeId}
-                    onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                   >
                     <option value="">Select a member...</option>
                     {employees.map(emp => (
-                      <option key={emp.employee_id} value={emp.employee_id}>{emp.full_name} ({emp.employee_id})</option>
+                      <option key={emp.employee_id} value={emp.employee_id}>
+                        {emp.full_name} ({emp.employee_id})
+                      </option>
                     ))}
                   </select>
-                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400" size={18} />
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Event Date</label>
-                <input 
-                  type="date" 
-                  className="input-premium"
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
-                />
-              </div>
+
+              <Input
+                label="Date"
+                type="date"
+                icon={Calendar}
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
 
               <div className="space-y-3">
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Current Status</label>
-                <div className="grid grid-cols-2 gap-4">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1 text-center block">
+                  Attendance Status
+                </label>
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, status: 'Present'})}
-                    className={`flex flex-col items-center justify-center gap-3 p-5 rounded-3xl border-2 transition-all duration-500 ${
-                      formData.status === 'Present' 
-                      ? 'border-green-500 bg-green-50/50 dark:bg-green-900/10 text-green-700 dark:text-green-400 shadow-lg shadow-green-500/10' 
-                      : 'border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-gray-400 grayscale hover:grayscale-0'
-                    }`}
+                    onClick={() => setFormData({ ...formData, status: 'Present' })}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 ${formData.status === 'Present'
+                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                        : 'border-slate-100 dark:border-slate-800 text-slate-400'
+                      }`}
                   >
-                    <div className={`p-2 rounded-xl ${formData.status === 'Present' ? 'bg-green-500 text-white animate-bounce-slow' : 'bg-gray-100 dark:bg-slate-800'}`}>
-                      <CheckCircle2 size={24} />
-                    </div>
-                    <span className="text-xs font-black uppercase tracking-widest">Present</span>
+                    <CheckCircle2 size={24} />
+                    <span className="text-xs font-bold uppercase tracking-wider">Present</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({...formData, status: 'Absent'})}
-                    className={`flex flex-col items-center justify-center gap-3 p-5 rounded-3xl border-2 transition-all duration-500 ${
-                      formData.status === 'Absent' 
-                      ? 'border-red-500 bg-red-50/50 dark:bg-red-900/10 text-red-700 dark:text-red-400 shadow-lg shadow-red-500/10' 
-                      : 'border-gray-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-gray-400 grayscale hover:grayscale-0'
-                    }`}
+                    onClick={() => setFormData({ ...formData, status: 'Absent' })}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-300 ${formData.status === 'Absent'
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400'
+                        : 'border-slate-100 dark:border-slate-800 text-slate-400'
+                      }`}
                   >
-                    <div className={`p-2 rounded-xl ${formData.status === 'Absent' ? 'bg-red-500 text-white animate-shake' : 'bg-gray-100 dark:bg-slate-800'}`}>
-                      <XCircle size={24} />
-                    </div>
-                    <span className="text-xs font-black uppercase tracking-widest">Absent</span>
+                    <XCircle size={24} />
+                    <span className="text-xs font-bold uppercase tracking-wider">Absent</span>
                   </button>
                 </div>
               </div>
 
-              <button 
-                type="submit" 
-                className="btn-premium btn-premium-primary w-full shadow-2xl h-14 text-base"
-                disabled={submitting}
+              <Button
+                type="submit"
+                className="w-full"
+                loading={submitting}
+                icon={ArrowRight}
               >
-                {submitting ? 'Archiving...' : 'Finalize Record'}
-              </button>
+                Log Attendance
+              </Button>
             </form>
+          </div>
+
+          {/* Mini Stats Card */}
+          <div className="card-modern p-6 bg-slate-900 dark:bg-slate-800 text-white overflow-hidden relative">
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-400">Total Presentation</p>
+                <div className="flex items-baseline gap-2">
+                  <h4 className="text-3xl font-black">
+                    {records.filter(r => r.status === 'Present').length}
+                  </h4>
+                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                    <TrendingUp size={12} /> Live
+                  </span>
+                </div>
+              </div>
+              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-primary-400">
+                <History size={24} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Attendance List */}
-        <div className="lg:col-span-7 space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-            <h2 className="text-2xl font-black gradient-text">History Log</h2>
-            <div className="flex items-center gap-3 group">
-              <div className="relative group/input">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500 z-10" size={16} />
-                <input 
-                  type="date" 
-                  className="input-premium pl-12 h-10 w-44 text-sm font-bold bg-white dark:bg-slate-900 border-none shadow-sm focus:ring-2 focus:ring-primary-500/20"
+        {/* Attendance Records List */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="card-modern p-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-1 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+                <input
+                  type="text"
+                  placeholder="Filter logs by name..."
+                  className="input-modern pl-11 shadow-none bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 p-1.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <Calendar size={14} className="ml-2 text-primary-500" />
+                <input
+                  type="date"
+                  className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-700 dark:text-slate-200 pr-2 outline-none"
                   value={filterDate}
                   onChange={(e) => setFilterDate(e.target.value)}
                 />
@@ -194,52 +251,53 @@ const Attendance = () => {
             </div>
           </div>
 
-          <div className="card-premium p-0 border-0 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-l from-primary-600 via-primary-300 to-transparent"></div>
-            
+          <div className="card-modern overflow-hidden">
             {loading ? (
-              <div className="py-32 flex justify-center"><Loader /></div>
+              <div className="p-8">
+                <TableSkeleton rows={8} cols={4} />
+              </div>
             ) : filteredRecords.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-gray-100 dark:border-slate-800 text-slate-400 text-[11px] font-black uppercase tracking-widest bg-gray-50/10">
-                      <th className="px-8 py-5">Full Name</th>
-                      <th className="px-8 py-5">Date</th>
-                      <th className="px-8 py-5">Status</th>
-                      <th className="px-8 py-5 text-right">Auth</th>
+                    <tr className="border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/20">
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Employee</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Date</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right whitespace-nowrap">Verification</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {filteredRecords.map((record, i) => (
-                      <tr key={i} className="group hover:bg-gray-50/50 dark:hover:bg-slate-800/20 transition-all duration-300">
-                        <td className="px-8 py-6">
+                      <tr key={i} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 flex items-center justify-center text-[10px] font-black">
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center font-bold text-xs">
                               {record.employee_name?.charAt(0)}
                             </div>
-                            <span className="text-base font-bold text-gray-900 dark:text-white">{record.employee_name}</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{record.employee_name}</span>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
-                          <span className="text-sm font-bold text-gray-500 dark:text-slate-400 font-mono italic">
+                        <td className="px-6 py-5 text-center">
+                          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 font-mono">
                             {new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                         </td>
-                        <td className="px-8 py-6">
-                          <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                            record.status === 'Present' 
-                            ? 'bg-green-100/50 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
-                            : 'bg-red-100/50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-                          }`}>
-                            {record.status === 'Present' ? <UserCheck size={12} strokeWidth={3} /> : <XCircle size={12} strokeWidth={3} />}
+                        <td className="px-6 py-5">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${record.status === 'Present'
+                              ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            }`}>
+                            <div className={`w-1 h-1 rounded-full ${record.status === 'Present' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                             {record.status}
                           </span>
                         </td>
-                        <td className="px-8 py-6 text-right">
-                          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700">
-                             <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Verified</span>
+                        <td className="px-6 py-5">
+                          <div className="flex justify-end">
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                              Signed
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -248,13 +306,11 @@ const Attendance = () => {
                 </table>
               </div>
             ) : (
-              <div className="py-40 text-center">
-                <div className="w-20 h-20 bg-gray-50 dark:bg-slate-800/50 rounded-[2rem] mx-auto flex items-center justify-center text-gray-200 dark:text-slate-700 mb-8 border-2 border-dashed border-gray-100 dark:border-slate-800">
-                  <Clock size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">No Logs Deteced</h3>
-                <p className="text-gray-500 dark:text-slate-400 font-medium">Clear for current selection. Try a different date filter.</p>
-              </div>
+              <EmptyState
+                icon={History}
+                title="No logs found"
+                description={`We couldn't find any attendance logs for ${new Date(filterDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+              />
             )}
           </div>
         </div>

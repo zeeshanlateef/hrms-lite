@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Search, UserPlus, FileDown, Users, Edit3, Eye, MoreHorizontal, X } from 'lucide-react';
+import { 
+  Plus, 
+  Trash2, 
+  Search, 
+  UserPlus, 
+  FileDown, 
+  Users, 
+  Edit3, 
+  Eye, 
+  MoreHorizontal, 
+  X,
+  Mail,
+  Building,
+  IdCard,
+  Filter,
+  Download
+} from 'lucide-react';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Modal from '../components/common/Modal';
-import Loader from '../components/common/Loader';
+import { TableSkeleton } from '../components/common/Skeleton';
+import EmptyState from '../components/common/EmptyState';
 import { getEmployees, addEmployee, updateEmployee, deleteEmployee, downloadEmployeesCSV } from '../services/api';
 
 const Employees = () => {
@@ -34,8 +51,8 @@ const Employees = () => {
       setEmployees(res.data || []);
     } catch (err) {
       console.error('Fetch error:', err);
-      setEmployees([]); // Don't use mock data anymore
-      setError('Failed to connect to backend server');
+      setEmployees([]);
+      setError('Connection to server failed. Please check backend.');
     } finally {
       setLoading(false);
     }
@@ -96,7 +113,7 @@ const Employees = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Delete this employee and all their records?')) {
+    if (window.confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
       try {
         await deleteEmployee(id);
         setEmployees(prev => prev.filter(emp => emp.employee_id !== id));
@@ -112,7 +129,7 @@ const Employees = () => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'employees.csv');
+      link.setAttribute('download', `employees_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -128,116 +145,128 @@ const Employees = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-[0.2em]">
-            <Users size={12} strokeWidth={3} />
-            Workforce Management
-          </div>
-          <h1 className="text-5xl font-black tracking-tight gradient-text">Talent Hub</h1>
-          <p className="text-gray-500 dark:text-slate-400 font-medium max-w-lg">Manage your organization's core asset - your people. Modern HR management redefined.</p>
+    <div className="space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-12">
+      {/* Header section with Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Employees
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            Manage your organization's roster and member details.
+          </p>
         </div>
+        
         <div className="flex items-center gap-3">
-          <button
+          <Button 
+            variant="secondary" 
+            icon={Download} 
+            size="sm"
             onClick={handleExportCSV}
-            className="btn-premium btn-premium-secondary group"
+            className="hidden sm:flex"
           >
-            <FileDown size={20} className="mr-2 group-hover:translate-y-0.5 transition-transform" />
-            Export Sync
-          </button>
-          <button
+            Export CSV
+          </Button>
+          <Button 
+            variant="primary" 
+            icon={Plus} 
+            size="sm"
             onClick={() => handleOpenModal('add')}
-            className="btn-premium btn-premium-primary"
           >
-            <Plus size={20} className="mr-2" strokeWidth={3} />
-            Onboard Talent
-          </button>
+            Add Employee
+          </Button>
         </div>
       </div>
 
-      {/* Main Table Container */}
-      <div className="card-premium overflow-hidden border-0 relative">
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary-600 via-primary-400 to-transparent opacity-50"></div>
-
-        <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/5 dark:bg-slate-900/5">
-          <div className="relative flex-1 max-w-xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400" size={20} />
+      {/* Filter & Search Bar */}
+      <div className="card-modern p-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search talent by name, ID, or department..."
-              className="input-premium pl-14 ring-offset-0 focus:border-primary-500 transition-all shadow-sm"
+              placeholder="Search by name, ID, or division..."
+              className="input-modern pl-11 shadow-none bg-white dark:bg-slate-950"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-            {filteredEmployees.length} Members Active
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <Users size={14} className="text-primary-500" />
+              {filteredEmployees.length} Total
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Main Content Area */}
+      <div className="card-modern overflow-hidden">
         {loading ? (
-          <div className="py-32 flex justify-center"><Loader /></div>
+          <div className="p-8">
+            <TableSkeleton rows={8} cols={5} />
+          </div>
         ) : filteredEmployees.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 text-[11px] font-black uppercase tracking-[0.15em]">
-                  <th className="px-8 py-5">ID Code</th>
-                  <th className="px-8 py-5">Employee</th>
-                  <th className="px-8 py-5">Contact</th>
-                  <th className="px-8 py-5">Division</th>
-                  <th className="px-8 py-5 text-right">Actions</th>
+                <tr className="border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/20">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">ID</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Member</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Email</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Division</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-slate-800/50">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {filteredEmployees.map((emp) => (
-                  <tr key={emp.employee_id} className="group hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all duration-300">
-                    <td className="px-8 py-6 font-mono text-xs font-black text-primary-600 dark:text-primary-400 bg-primary-50/10 dark:bg-primary-900/5">{emp.employee_id}</td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-[14px] bg-gradient-to-br from-primary-600 to-primary-400 text-white flex items-center justify-center text-sm font-black shadow-lg shadow-primary-500/20 group-hover:scale-110 transition-transform duration-500">
+                  <tr key={emp.employee_id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                    <td className="px-6 py-5">
+                      <span className="font-mono text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-md">
+                        {emp.employee_id}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-110 transition-transform">
                           {(emp.full_name || 'E').charAt(0)}
                         </div>
-                        <div>
-                          <p className="text-base font-black text-gray-900 dark:text-white leading-none mb-1">{emp.full_name}</p>
-                          <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">Permanent Staff</p>
-                        </div>
+                        <span className="font-bold text-slate-900 dark:text-white">{emp.full_name}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <p className="text-sm font-bold text-gray-600 dark:text-slate-300">{emp.email}</p>
+                    <td className="px-6 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+                      {emp.email}
                     </td>
-                    <td className="px-8 py-6">
-                      <span className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-white dark:bg-slate-800 text-primary-700 dark:text-primary-400 border border-primary-100 dark:border-primary-900/50 shadow-sm">
+                    <td className="px-6 py-5">
+                      <span className="inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-500/10">
                         {emp.department}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                        <button
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          icon={Eye} 
                           onClick={() => handleOpenModal('view', emp)}
-                          className="p-2.5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-all rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                          title="View Profile"
-                        >
-                          <Eye size={18} />
-                        </button>
-                        <button
+                          title="View Info"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          icon={Edit3} 
                           onClick={() => handleOpenModal('edit', emp)}
-                          className="p-2.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                          title="Edit Details"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button
+                          title="Edit"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          icon={Trash2} 
                           onClick={() => handleDelete(emp.employee_id)}
-                          className="p-2.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-all rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
-                          title="Offboard"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                          className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                          title="Remove"
+                        />
                       </div>
                     </td>
                   </tr>
@@ -246,98 +275,96 @@ const Employees = () => {
             </table>
           </div>
         ) : (
-          <div className="py-32 text-center">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-50 dark:bg-slate-800 rounded-[2.5rem] text-gray-200 dark:text-slate-700 mb-8 blur-[0.5px]">
-              <Users size={48} strokeWidth={1} />
-            </div>
-            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Workspace Empty</h3>
-            <p className="text-gray-500 dark:text-slate-400 font-medium max-w-xs mx-auto">Time to build the dream team. Start by clicking Onboard Talent above.</p>
-          </div>
+          <EmptyState 
+            icon={Users}
+            title={searchTerm ? "No results found" : "Your team is empty"}
+            description={searchTerm ? `We couldn't find any employees matching "${searchTerm}"` : "Start building your team by adding your first employee."}
+            action={!searchTerm && (
+              <Button variant="primary" icon={Plus} onClick={() => handleOpenModal('add')}>
+                Add Employee
+              </Button>
+            )}
+          />
         )}
       </div>
 
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={modalMode === 'add' ? 'Onboard New Talent' : modalMode === 'edit' ? 'Update Profile' : 'Member Dossier'}
+        title={modalMode === 'add' ? 'Onboard Staff' : modalMode === 'edit' ? 'Update Profile' : 'Member Details'}
         footer={
           <div className="flex items-center justify-end gap-3 w-full">
-            <button
-              onClick={() => setModalOpen(false)}
-              className="btn-premium btn-premium-secondary"
-            >
-              {modalMode === 'view' ? 'Close' : 'Discard'}
-            </button>
+            <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>
+              {modalMode === 'view' ? 'Close' : 'Cancel'}
+            </Button>
             {modalMode !== 'view' && (
-              <button
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleSubmit}
-                className="btn-premium btn-premium-primary min-w-[140px]"
-                disabled={submitting}
+                loading={submitting}
               >
-                {submitting ? 'Processing...' : modalMode === 'add' ? 'Confirm Onboarding' : 'Save Changes'}
-              </button>
+                {modalMode === 'add' ? 'Add Employee' : 'Save Changes'}
+              </Button>
             )}
           </div>
         }
       >
-        <form id="onboard-form" className="space-y-6 py-4 px-2" onSubmit={handleSubmit}>
-          <button type="submit" className="hidden" />
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-[1.5rem] flex items-center gap-3 animate-shake">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <p className="text-xs font-black text-red-600 dark:text-red-400 uppercase tracking-wider">{error}</p>
+            <div className="p-3 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl text-rose-600 dark:text-rose-400 text-sm font-semibold animate-shake">
+              {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Unique Identifier</label>
-              <input
-                placeholder="PRO-2024-001"
-                className="input-premium"
-                value={formData.employeeId}
-                disabled={modalMode !== 'add'}
-                onChange={(e) => setFormData({ ...formData, employeeId: e.target.value.toUpperCase() })}
-                readOnly={modalMode === 'view'}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Full Member Name</label>
-              <input
-                placeholder="Alex Sterling"
-                className="input-premium"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                readOnly={modalMode === 'view'}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Official Email Address</label>
-            <input
-              type="email"
-              placeholder="alex@organization.com"
-              className="input-premium"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            <Input
+              label="Employee ID"
+              placeholder="e.g. EMP001"
+              icon={IdCard}
+              value={formData.employeeId}
+              disabled={modalMode !== 'add'}
+              onChange={(e) => setFormData({ ...formData, employeeId: e.target.value.toUpperCase() })}
+              readOnly={modalMode === 'view'}
+            />
+            <Input
+              label="Full Name"
+              placeholder="e.g. John Doe"
+              icon={Users}
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               readOnly={modalMode === 'view'}
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Assigned Division</label>
-            <select
-              className="input-premium appearance-none"
-              value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-              disabled={modalMode === 'view'}
-            >
-              <option value="">Select Division</option>
-              {['Engineering', 'Design', 'Marketing', 'Core HR', 'Strategic Sales', 'Executive'].map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="e.g. john@company.com"
+            icon={Mail}
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            readOnly={modalMode === 'view'}
+          />
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
+              Division
+            </label>
+            <div className="relative group">
+              <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+              <select
+                className="input-modern pl-11 appearance-none cursor-pointer"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                disabled={modalMode === 'view'}
+              >
+                <option value="">Select Division</option>
+                {['Engineering', 'Design', 'Marketing', 'Core HR', 'Sales', 'Executive'].map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </form>
       </Modal>
