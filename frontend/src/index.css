@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -34,6 +37,10 @@
 
   :root {
     color-scheme: light dark;
+  }
+
+  html {
+    overflow-x: hidden;
   }
 
   body {

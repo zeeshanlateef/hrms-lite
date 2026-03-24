@@ -17,11 +17,14 @@ import { Link } from 'react-router-dom';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Skeleton from '../components/common/Skeleton';
+import Loader from '../components/common/Loader';
+import { getLocalDateString } from '../utils/date';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [filterDate, setFilterDate] = useState(getLocalDateString());
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -39,6 +42,7 @@ const Dashboard = () => {
         const attendance = attRes.data || [];
         const dashboardStats = statsRes.data;
 
+        setEmployees(employees);
         setStats({
           totalEmployees: dashboardStats.total_employees || employees.length || 0,
           totalRecords: dashboardStats.total_attendance || attendance.length || 0,
@@ -55,24 +59,7 @@ const Dashboard = () => {
     fetchStats();
   }, [filterDate]);
 
-  if (loading) return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        <Skeleton className="h-12 w-48 rounded-xl" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 w-full rounded-2xl" />)}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Skeleton className="lg:col-span-2 h-[400px] rounded-2xl" />
-        <Skeleton className="h-[400px] rounded-2xl" />
-      </div>
-    </div>
-  );
+  if (loading) return <Loader />;
 
   const statCards = [
     {
@@ -110,25 +97,23 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in pb-12">
+    <div className="space-y-8 animate-fade-in pb-12">
       {/* Welcome Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight sm:text-4xl">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Overview
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">
             Monitor your organization's health and activity in real-time.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 p-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-          <div className="pl-3 text-slate-400">
-            <Calendar size={18} />
-          </div>
+        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm self-start sm:self-center">
+          <Calendar size={16} className="text-primary-500 shrink-0" />
           <input
             type="date"
-            className="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700 dark:text-slate-200 pr-4 outline-none"
+            className="bg-transparent border-none focus:ring-0 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
           />
@@ -136,16 +121,16 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {statCards.map((card, idx) => (
           <Card key={idx} {...card} />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Weekly Trend */}
-        <div className="lg:col-span-8 card-modern p-8">
-          <div className="flex items-center justify-between mb-10">
+        <div className="lg:col-span-8 card-modern p-6">
+          <div className="flex items-center justify-between mb-6">
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <TrendingUp size={20} className="text-primary-500" />
@@ -160,32 +145,41 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          <div className="flex items-end justify-between gap-2 md:gap-4 h-64 px-2 mb-4">
-            {[45, 60, 55, 85, 95, 70, 65].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
-                <div className="w-full relative flex items-end justify-center h-full">
+          {/* Bar chart */}
+          <div className="flex flex-col gap-2">
+            {/* Bars */}
+            <div className="flex items-end justify-between gap-2 md:gap-3 h-52 px-1">
+              {[45, 60, 55, 85, 95, 70, 65].map((h, i) => (
+                <div key={i} className="flex-1 flex flex-col justify-end h-full group relative">
+                  {/* Track */}
+                  <div className="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-lg absolute bottom-0 left-0" />
+                  {/* Bar */}
                   <div
-                    className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-xl group-hover:bg-primary-50 dark:group-hover:bg-primary-900/10 transition-colors"
-                    style={{ height: '100%' }}
-                  />
-                  <div
-                    className="absolute bottom-0 w-full bg-primary-600/80 rounded-t-xl transition-all duration-700 group-hover:bg-primary-500 group-hover:shadow-lg group-hover:shadow-primary-500/20"
+                    className="relative w-full bg-primary-500/80 hover:bg-primary-500 rounded-lg transition-all duration-500 cursor-pointer"
                     style={{ height: `${h}%` }}
                   >
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all font-bold z-10 whitespace-nowrap">
+                    {/* Tooltip */}
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white text-[10px] px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity font-bold z-10 whitespace-nowrap pointer-events-none">
                       {h}% Present
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Day {i + 1}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+            {/* Labels */}
+            <div className="flex justify-between gap-2 md:gap-3 px-1">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <span key={day} className="flex-1 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                  {day}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Action Center */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="card-modern p-8 h-full flex flex-col justify-between overflow-hidden relative">
+        <div className="lg:col-span-4">
+          <div className="card-modern p-6 h-full flex flex-col justify-between overflow-hidden relative">
             <div className="space-y-8 relative z-10">
               <div className="space-y-1">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -226,6 +220,64 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Recent Employees */}
+      <div className="card-modern overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <Users size={18} className="text-primary-500" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Employees</h3>
+            <span className="ml-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold rounded-full">
+              {employees.length}
+            </span>
+          </div>
+          <Link
+            to="/employees"
+            className="flex items-center gap-1 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+          >
+            View All <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        {employees.length === 0 ? (
+          <div className="px-6 py-10 text-center text-sm text-slate-400 dark:text-slate-500 font-medium">
+            No employees found.
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {employees.slice(0, 5).map((emp) => (
+              <div key={emp.employee_id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                  {(emp.full_name || 'E').charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{emp.full_name}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{emp.email}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-500/10">
+                    {emp.department}
+                  </span>
+                  <span className="font-mono text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                    {emp.employee_id}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {employees.length > 5 && (
+          <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/10">
+            <Link
+              to="/employees"
+              className="flex items-center justify-center gap-1.5 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+            >
+              View all {employees.length} employees <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

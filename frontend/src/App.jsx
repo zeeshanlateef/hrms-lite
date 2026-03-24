@@ -51,7 +51,7 @@ function App() {
             <div className="lg:pl-20 transition-all duration-300">
               <Navbar />
               
-              <main className="p-4 md:p-8 max-w-[1600px] mx-auto animate-fade-in min-h-[calc(100vh-80px)]">
+              <main className="px-4 py-6 md:px-8 md:py-8 max-w-[1440px] mx-auto min-h-[calc(100vh-80px)]">
                 <Suspense fallback={<Loader />}>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />

@@ -147,12 +147,12 @@ const Employees = () => {
   return (
     <div className="space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-12">
       {/* Header section with Stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Employees
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">
             Manage your organization's roster and member details.
           </p>
         </div>
@@ -244,7 +244,7 @@ const Employees = () => {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1">
                         <Button 
                           variant="ghost" 
                           size="sm" 

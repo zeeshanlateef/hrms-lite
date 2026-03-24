@@ -20,19 +20,20 @@ import Input from '../components/common/Input';
 import { TableSkeleton } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import { getEmployees, getAttendance, markAttendance } from '../services/api';
+import { getLocalDateString } from '../utils/date';
 
 const Attendance = () => {
   const [employees, setEmployees] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [filterDate, setFilterDate] = useState(getLocalDateString());
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     employeeId: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getLocalDateString(),
     status: 'Present'
   });
 
@@ -104,18 +105,20 @@ const Attendance = () => {
   return (
     <div className="space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-12">
       {/* Header section */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Attendance
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium">
-          Track and manage daily records for your workforce.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Attendance
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">
+            Track and manage daily records for your workforce.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Attendance Marking Form */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-5">
           <div className="card-modern p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <Fingerprint size={80} />
@@ -227,7 +230,7 @@ const Attendance = () => {
         {/* Attendance Records List */}
         <div className="lg:col-span-8 space-y-6">
           <div className="card-modern p-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="relative flex-1 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={18} />
                 <input
@@ -239,11 +242,11 @@ const Attendance = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-3 p-1.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                <Calendar size={14} className="ml-2 text-primary-500" />
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shrink-0">
+                <Calendar size={14} className="text-primary-500" />
                 <input
                   type="date"
-                  className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-700 dark:text-slate-200 pr-2 outline-none"
+                  className="bg-transparent border-none focus:ring-0 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none"
                   value={filterDate}
                   onChange={(e) => setFilterDate(e.target.value)}
                 />
